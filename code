@@ -1,0 +1,60 @@
+// Define constants for the pins
+#define pirSensorPin 2
+#define temperatureSensorPin A0
+#define led1Pin 13
+#define led2Pin 12
+
+// Declare variables to store PIR state and temperature
+volatile int pirState = LOW;
+volatile int temperatureValue = 0;
+
+void setup() {
+  // Set the LED, PIR sensor, and temperature sensor pins as output or input
+  pinMode(led1Pin, OUTPUT);
+  pinMode(led2Pin, OUTPUT);
+  pinMode(pirSensorPin, INPUT);
+  pinMode(temperatureSensorPin, INPUT);
+
+  // Set up serial communication at 9600 baud
+  Serial.begin(9600);
+
+  // Attach an interrupt to the PIR sensor pin, triggering the pir_isr function on any change
+  attachInterrupt(digitalPinToInterrupt(pirSensorPin), pir_isr, CHANGE);
+}
+
+void pir_isr() {
+  // Read the state of the PIR sensor
+  pirState = digitalRead(pirSensorPin);
+
+  // Print the PIR state to the serial monitor
+  Serial.print("Motion Detected: ");
+  Serial.println(pirState);
+
+  // Turn on the first LED when the PIR sensor is HIGH
+  if (pirState == HIGH) {
+    digitalWrite(led1Pin, HIGH);
+  } else {
+    // Otherwise, turn the first LED off
+    digitalWrite(led1Pin, LOW);
+  }
+}
+
+void loop() {
+  // Your main loop code here
+
+  // Your logic to handle temperature sensor data goes here
+  temperatureValue = analogRead(temperatureSensorPin);
+  Serial.print("Temperature Value: ");
+  Serial.println(temperatureValue);
+
+  // Check if temperature is above 80 degrees Celsius
+  if (temperatureValue > 225) {
+    digitalWrite(led2Pin, HIGH);
+    Serial.println("High Temperature Detected!");
+  } else {
+    // Otherwise, turn the second LED off
+    digitalWrite(led2Pin, LOW);
+  }
+
+  delay(1000); // Add a delay to avoid continuous Serial Monitor output
+}
